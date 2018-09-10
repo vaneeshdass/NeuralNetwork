@@ -17,8 +17,11 @@ out_dir = '/media/vaneesh/Data/Datasets/German/training/training_5_classes/34/'
 # df_labels = pd.DataFrame(iris.target)
 # endregion
 
-# Code for custom dataset
-df_images, df_labels = make_dataframe_from_images(parent_directory)
+# mnist kaggle dataset
+df_images, df_labels = read_csv_file()
 
-neural_network.neural_network(df_images, df_labels)
+# Code for custom dataset
+# df_images, df_labels = make_dataframe_from_images(parent_directory)
+
+neural_network.calculate_neurons_and_run(df_images, df_labels)
 print('---------------------------Done---------------------------------')
