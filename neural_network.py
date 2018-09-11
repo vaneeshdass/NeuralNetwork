@@ -47,26 +47,24 @@ def plot_confusion_matrix(cm, classes,
 
 
 def calculate_neurons_and_run(df_images, df_labels):
+    '''This function calculates the neurons and run neural network for each calcluations'''
     for k in range(1, 12, 2):
-        no_of_neurons = 16 - k  # int(((len(df_images.columns) + len(df_labels.columns)) ** 0.5) - k)
+        no_of_neurons = int(((len(df_images.columns) + len(df_labels.columns)) ** 0.5) + k)
         print('\n----------------------------Building model for ' + str(
             no_of_neurons) + ' neurons-------------------------------\n')
         neural_network(df_images, df_labels, no_of_neurons)
 
 
 def neural_network(df_images, df_labels, no_of_neurons):
+    '''This function build the neural network and then delegate the accuracy calculation. It also plots the graphs'''
     classifier = MLPClassifier(solver="adam", verbose=True, early_stopping=False, max_iter=1000)
+    classifier.alpha = 0.05
     classifier.hidden_layer_sizes = (no_of_neurons,)
     classifier.activation = "relu"
     classifier.learning_rate_init = 0.0001
-    # classifier.learning_rate = 'adaptive'
 
     # splitting the dataset
-    train_X, test_X, train_y, test_y = train_test_split(df_images, df_labels, test_size=0.2, random_state=1)
-    # train_X = train_X.values
-    # test_X = test_X.values
-    # train_y = train_y.values.ravel()
-    # test_y = test_y.values
+    train_X, test_X, train_y, test_y = train_test_split(df_images, df_labels, test_size=0.2, random_state=1, )
 
     # fit the model
     classifier.fit(train_X, train_y)
@@ -87,14 +85,13 @@ def neural_network(df_images, df_labels, no_of_neurons):
     # save the model to disk
     current_date_time = time.strftime("%d/%m/%Y") + '_' + time.strftime("%H:%M:%S")
     filename = 'model_for_' + str(no_of_neurons) + '_' + current_date_time + '.sav'
-    # filename = 'finalized_model.sav'
-    joblib.dump(classifier, filename.replace('/', '_'))
+    joblib.dump(classifier, filename.replace('/', '_'))  # saving the classifier using joblib library
     print('model saved in file ' + filename)
 
     # writing on csv file for reporting
     row_to_write = []
     row_to_write.append([filename, str(no_of_neurons), str(train_accuracy), str(test_accuracy)])
-    with open('report.csv', 'a') as writeFile:
+    with open('report_regul_mnist.csv', 'a') as writeFile:
         writer = csv.writer(writeFile)
         writer.writerows(row_to_write)
 
@@ -109,12 +106,14 @@ def neural_network(df_images, df_labels, no_of_neurons):
 
 
 def calculate_accuracy(classifier, test_X, test_y, train_X, train_y):
-    # First for training
+    '''this func calculate and returns the train & training accuracy'''
+    # for training
     prob_train = classifier.predict_proba(train_X)
     prob_train_max = prob_train.argmax(axis=1)
     success_vector_train = (train_y.values.argmax(axis=1) == prob_train_max)
     success_int_vector_train = success_vector_train.astype(int)
     train_accuracy = (success_int_vector_train.sum() / success_int_vector_train.__len__()) * 100
+
     # for testing
     prob_test = classifier.predict_proba(test_X)
     prob_test_max = prob_test.argmax(axis=1)
