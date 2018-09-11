@@ -1,8 +1,8 @@
 import neural_network
 from preprocessing import *
 
-parent_directory = '/media/vaneesh/Data/Datasets/German/training/training_5_classes/'
-#parent_directory = '/media/vaneesh/Data/Datasets/German/training/training_5_classes (copy)/'
+# parent_directory = '/media/vaneesh/Data/Datasets/German/training/training_5_classes/'
+parent_directory = '/media/vaneesh/Data/Datasets/German/training/training_5_classes (copy)/'
 out_dir = '/media/vaneesh/Data/Datasets/German/training/training_5_classes/34/'
 
 # region code for mnist & other datasets
@@ -18,10 +18,10 @@ out_dir = '/media/vaneesh/Data/Datasets/German/training/training_5_classes/34/'
 # endregion
 
 # mnist kaggle dataset
-df_images, df_labels = read_csv_file()
+#df_images, df_labels = read_csv_file()
 
 # Code for custom dataset
-# df_images, df_labels = make_dataframe_from_images(parent_directory)
+df_images, df_labels = make_dataframe_from_images(parent_directory)
 
 neural_network.calculate_neurons_and_run(df_images, df_labels)
 print('---------------------------Done---------------------------------')

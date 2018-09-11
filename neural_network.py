@@ -61,7 +61,7 @@ def neural_network(df_images, df_labels, no_of_neurons):
     classifier.alpha = 0.05
     classifier.hidden_layer_sizes = (no_of_neurons,)
     classifier.activation = "relu"
-    classifier.learning_rate_init = 0.0001
+    classifier.learning_rate_init = 0.1
 
     # splitting the dataset
     train_X, test_X, train_y, test_y = train_test_split(df_images, df_labels, test_size=0.2, random_state=1, )
@@ -70,8 +70,11 @@ def neural_network(df_images, df_labels, no_of_neurons):
     classifier.fit(train_X, train_y)
 
     # for calculating accuracy manually
-    print('------------------------accuracies for ' + str(no_of_neurons) + ' neurons----------------------------\n')
+    print('\n------------------------accuracies for ' + str(no_of_neurons) + ' neurons----------------------------\n')
     train_accuracy, test_accuracy = calculate_accuracy(classifier, test_X, test_y, train_X, train_y)
+
+    print('\n---------------------Class wise accuracies-------------------------\n')
+    classwise_accuracy(classifier, test_X, test_y, train_X, train_y)
 
     # plotting the loss curve vs iterations
     loss_values = classifier.loss_curve_
@@ -86,7 +89,7 @@ def neural_network(df_images, df_labels, no_of_neurons):
     current_date_time = time.strftime("%d/%m/%Y") + '_' + time.strftime("%H:%M:%S")
     filename = 'model_for_' + str(no_of_neurons) + '_' + current_date_time + '.sav'
     joblib.dump(classifier, filename.replace('/', '_'))  # saving the classifier using joblib library
-    print('model saved in file ' + filename)
+    print('\nmodel saved in file ' + filename + '\n')
 
     # writing on csv file for reporting
     row_to_write = []
@@ -120,7 +123,7 @@ def calculate_accuracy(classifier, test_X, test_y, train_X, train_y):
     success_vector_test = (test_y.values.argmax(axis=1) == prob_test_max)
     success_int_vector_test = success_vector_test.astype(int)
     test_accuracy = (success_int_vector_test.sum() / success_int_vector_test.__len__()) * 100
-    print("\n\nTraining set score: %f" % train_accuracy)
+    print("Training set score: %f" % train_accuracy)
     print("Test set score: %f" % test_accuracy)
     return train_accuracy, test_accuracy
 
@@ -142,17 +145,35 @@ def compute_confusion_matrix(classifier, df_labels, test_X, test_y):
 
 
 def classwise_accuracy(classifier, test_X, test_y, train_X, train_y):
-    df_train_labels = pd.DataFrame(train_y)
+    # df_train_labels = pd.DataFrame(train_y)
+    # df_train_labels.columns = ['label']
+    # df_train_labels["success"] = (train_y == classifier.predict(train_X))
+
+    train_label = train_y.values.argmax(axis=1)
+    df_train_labels = pd.DataFrame(train_label)
     df_train_labels.columns = ['label']
-    df_train_labels["success"] = (train_y == classifier.predict(train_X))
+    prob_train = classifier.predict_proba(train_X)
+    prob_train_max = prob_train.argmax(axis=1)
+    success_vector_train = (train_y.values.argmax(axis=1) == prob_train_max)
+    success_int_vector_train = success_vector_train.astype(int)
+    df_train_labels["success"] = success_int_vector_train
+
     print('\n-------------------Train-set accuracy metrics--------------------\n')
     for name, group in df_train_labels.groupby('label'):
         frac = sum(group["success"]) / len(group)
         print("Success rate for labeling class %i was %f " % (name, frac))
+
     # printing test set classwise accuracy
-    df_test_labels = pd.DataFrame(test_y)
+
+    test_label = test_y.values.argmax(axis=1)
+    df_test_labels = pd.DataFrame(test_label)
     df_test_labels.columns = ['label']
-    df_test_labels["success"] = (test_y == classifier.predict(test_X))
+    prob_test = classifier.predict_proba(test_X)
+    prob_test_max = prob_test.argmax(axis=1)
+    success_vector_test = (test_y.values.argmax(axis=1) == prob_test_max)
+    success_int_vector_test = success_vector_test.astype(int)
+    df_test_labels["success"] = success_int_vector_test
+
     print('\n-------------------Test-set accuracy metrics--------------------\n')
     for name, group in df_test_labels.groupby('label'):
         frac = sum(group["success"]) / len(group)
